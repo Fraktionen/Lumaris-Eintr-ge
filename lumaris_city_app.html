@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumaris City – Staff Portal</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0c14;
+    --bg2: #0f1220;
+    --bg3: #151928;
+    --bg4: #1c2235;
+    --accent: #5b7fff;
+    --accent2: #3d5ccc;
+    --gold: #f0b429;
+    --silver: #a0aec0;
+    --bronze: #cd7f32;
+    --green: #38d9a9;
+    --red: #ff6b6b;
+    --text: #e8eaf0;
+    --text2: #8892a4;
+    --border: rgba(91,127,255,0.15);
+    --border2: rgba(91,127,255,0.3);
+    --card: rgba(21,25,40,0.9);
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Exo 2', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ─── LOGIN SCREEN ─── */
+  #loginScreen {
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+  }
+  #loginScreen::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(91,127,255,0.08) 0%, transparent 70%);
+    top: -100px; left: 50%; transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .login-box {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 380px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .login-logo h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+  .login-logo p {
+    font-size: 12px;
+    color: var(--text2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .login-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    background: var(--bg2);
+    padding: 4px;
+    border-radius: 8px;
+  }
+  .login-tab {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .login-tab.active {
+    background: var(--accent2);
+    color: #fff;
+  }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .form-group input, .form-group select {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus {
+    border-color: var(--accent);
+  }
+  .form-group select option { background: var(--bg3); }
+
+  .btn {
+    width: 100%;
+    padding: 11px;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn.btn-sm {
+    width: auto; padding: 7px 16px;
+    font-size: 13px; margin-top: 0;
+  }
+  .btn.btn-danger { background: var(--red); }
+  .btn.btn-danger:hover { background: #cc4444; }
+  .btn.btn-green { background: #2d8a6e; }
+  .btn.btn-green:hover { background: #226b55; }
+  .btn.btn-outline {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--text);
+  }
+  .btn.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .login-error {
+    color: var(--red);
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  #mainScreen { flex-direction: row; }
+
+  .sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo span {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+  .sidebar-logo small {
+    display: block;
+    font-size: 10px;
+    color: var(--text2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .sidebar-user {
+    padding: 14px 16px;
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-user .username {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .sidebar-user .rank-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 4px;
+    display: inline-block;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .nav { padding: 12px 0; flex: 1; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+  }
+  .nav-item:hover { color: var(--text); background: var(--bg3); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(91,127,255,0.08); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .sidebar-bottom {
+    padding: 14px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .logout-btn {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; color: var(--text2); font-size: 12px;
+    transition: color 0.2s;
+  }
+  .logout-btn:hover { color: var(--red); }
+
+  .main-content {
+    margin-left: 220px;
+    flex: 1;
+    padding: 28px;
+    min-height: 100vh;
+  }
+
+  /* ─── PAGE ─── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  .page-header h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 16px;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* ─── TOP 5 BANNER ─── */
+  .top5-banner {
+    background: linear-gradient(135deg, rgba(91,127,255,0.12), rgba(61,92,204,0.08));
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+  .top5-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .top5-list {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .top5-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .top5-rank {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    min-width: 20px;
+  }
+  .rank1 { color: var(--gold); }
+  .rank2 { color: var(--silver); }
+  .rank3 { color: var(--bronze); }
+  .rank4, .rank5 { color: var(--text2); }
+
+  /* ─── TABLE ─── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text2);
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+  td {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(91,127,255,0.06);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(91,127,255,0.04); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  /* ─── RANK COLORS ─── */
+  .r-pl { background: rgba(240,180,41,0.15); color: #f0b429; }
+  .r-stvpl { background: rgba(240,180,41,0.1); color: #d4982a; }
+  .r-mgmt { background: rgba(91,127,255,0.15); color: #7b9bff; }
+  .r-tl { background: rgba(56,217,169,0.15); color: #38d9a9; }
+  .r-stvtl { background: rgba(56,217,169,0.1); color: #2cb890; }
+  .r-sradmin { background: rgba(155,89,182,0.15); color: #be8ef5; }
+  .r-admin { background: rgba(155,89,182,0.1); color: #a67ad0; }
+  .r-jradmin { background: rgba(155,89,182,0.08); color: #8b65ae; }
+  .r-srmod { background: rgba(255,165,0,0.15); color: #ffa500; }
+  .r-mod { background: rgba(255,165,0,0.1); color: #d4890a; }
+  .r-jrmod { background: rgba(255,165,0,0.08); color: #b5760b; }
+  .r-srsupp { background: rgba(100,200,255,0.15); color: #64c8ff; }
+  .r-supp { background: rgba(100,200,255,0.1); color: #4ab0e6; }
+  .r-jrsupp { background: rgba(100,200,255,0.08); color: #3a90c0; }
+
+  /* ─── FORM MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 28px;
+    width: 440px;
+    max-width: 95vw;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+  }
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+
+  /* ─── EINREISE FORM ─── */
+  .einreise-options { display: flex; gap: 8px; }
+  .radio-btn {
+    flex: 1; padding: 8px; text-align: center;
+    border: 1px solid var(--border);
+    border-radius: 8px; cursor: pointer;
+    font-size: 12px; color: var(--text2);
+    transition: all 0.2s; user-select: none;
+  }
+  .radio-btn.selected { border-color: var(--accent); color: var(--accent); background: rgba(91,127,255,0.1); }
+
+  /* ─── CHART WRAPPER ─── */
+  .chart-wrap { position: relative; width: 100%; height: 200px; }
+
+  /* ─── WEEK SLIDER ─── */
+  .slider-wrap {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .slider-wrap label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+  .slider-wrap input[type=range] { flex: 1; accent-color: var(--accent); }
+  .slider-val {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px; font-weight: 700;
+    color: var(--accent); min-width: 80px; text-align: right;
+  }
+
+  /* ─── MEMBER DETAIL ─── */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer; color: var(--text2); font-size: 12px;
+    margin-bottom: 16px; transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  /* ─── GRID LAYOUT ─── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ─── SEARCH/FILTER ─── */
+  .filter-row {
+    display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .filter-row input, .filter-row select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+  .filter-row input { flex: 1; min-width: 180px; }
+  .filter-row input:focus, .filter-row select:focus { border-color: var(--accent); }
+  .filter-row select option { background: var(--bg3); }
+
+  .empty-state {
+    text-align: center; padding: 40px 20px;
+    color: var(--text2); font-size: 13px;
+  }
+
+  .week-reset-info {
+    font-size: 11px; color: var(--text2);
+    margin-top: 6px;
+  }
+
+  .progress-bar-wrap {
+    background: var(--bg2);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.4s;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>LUMARIS CITY</h1>
+      <p>Staff Portal</p>
+    </div>
+    <div class="login-tabs">
+      <div class="login-tab active" onclick="switchLoginTab('member')">Supporter / Staff</div>
+      <div class="login-tab" onclick="switchLoginTab('tl')">TL / PL Zugang</div>
+    </div>
+    <div class="form-group">
+      <label>Benutzername</label>
+      <input type="text" id="loginUser" placeholder="Username eingeben" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Passwort</label>
+      <input type="password" id="loginPass" placeholder="Passwort eingeben">
+    </div>
+    <button class="btn" onclick="doLogin()">Einloggen</button>
+    <div class="login-error" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MAIN APP ═══════════════════ -->
+<div id="mainScreen" class="screen">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span>LUMARIS CITY</span>
+      <small>Staff Portal</small>
+    </div>
+    <div class="sidebar-user">
+      <div class="username" id="sidebarUser">–</div>
+      <div class="rank-badge" id="sidebarRank">–</div>
+    </div>
+    <nav class="nav" id="navMenu"></nav>
+    <div class="sidebar-bottom">
+      <div class="logout-btn" onclick="doLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Ausloggen
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+
+    <!-- PAGE: Mein Dashboard -->
+    <div class="page active" id="pageDashboard">
+      <div class="page-header">
+        <h2>Mein Dashboard</h2>
+      </div>
+
+      <!-- Top 5 Banner -->
+      <div class="top5-banner" id="top5Banner">
+        <div class="top5-title">🏆 Top 5 Einträge dieser Woche</div>
+        <div class="top5-list" id="top5List"></div>
+        <div class="week-reset-info">Wird jeden Sonntag um 23:59 Uhr zurückgesetzt</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="myTotalEntries">0</div>
+          <div class="stat-label">Einträge Gesamt</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="myWeekEntries">0</div>
+          <div class="stat-label">Diese Woche</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="myEinreisen">0</div>
+          <div class="stat-label">Einreisen</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title">Einträge pro Woche</div>
+          <div class="chart-wrap">
+            <canvas id="weekChart" role="img" aria-label="Wöchentliche Einträge">Keine Daten</canvas>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Übersicht</div>
+          <div class="chart-wrap">
+            <canvas id="typeChart" role="img" aria-label="Typ-Verteilung">Keine Daten</canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: Eintrag hinzufügen -->
+    <div class="page" id="pageEintrag">
+      <div class="page-header">
+        <h2>Eintrag hinzufügen</h2>
+      </div>
+      <div class="card" style="max-width:500px">
+        <div class="form-group">
+          <label>Spieler-ID (FiveM)</label>
+          <input type="text" id="eID" placeholder="z.B. 12345" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Grund / Kategorie</label>
+          <select id="eGrund">
+            <option value="">– Grund auswählen –</option>
+            <option>Bug-Report</option>
+            <option>Spieler-Beschwerde</option>
+            <option>Regel-Verstoß</option>
+            <option>Allgemeiner Support</option>
+            <option>Whitelist-Antrag</option>
+            <option>Technischer Support</option>
+            <option>Sonstiges</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notizen (optional)</label>
+          <input type="text" id="eNote" placeholder="Kurze Beschreibung" autocomplete="off">
+        </div>
+        <button class="btn" onclick="submitEintrag()">Eintrag speichern</button>
+        <div id="eintragMsg" style="margin-top:10px;font-size:12px;color:var(--green);min-height:18px;"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: Einreise hinzufügen -->
+    <div class="page" id="pageEinreise">
+      <div class="page-header">
+        <h2>Einreise hinzufügen</h2>
+      </div>
+      <div class="card" style="max-width:500px">
+        <div class="form-group">
+          <label>FiveM Name des Spielers</label>
+          <input type="text" id="erName" placeholder="FiveM Name" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <div class="einreise-options">
+            <div class="radio-btn selected" id="rb-eingeReg" onclick="selectEinreise('einReg')">Eingreist (registriert)</div>
+            <div class="radio-btn" id="rb-eingeNoReg" onclick="selectEinreise('einNoReg')">Eingreist (nicht reg.)</div>
+            <div class="radio-btn" id="rb-nichtEinge" onclick="selectEinreise('nichtEin')">Nicht eingreist</div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Grund</label>
+          <select id="erGrund">
+            <option value="">– Grund auswählen –</option>
+            <option>Ersteinreise</option>
+            <option>Wiedereinreise</option>
+            <option>Kontrolle</option>
+            <option>Auffällig</option>
+            <option>Gebannt</option>
+            <option>Sonstiges</option>
+          </select>
+        </div>
+        <button class="btn" onclick="submitEinreise()">Einreise speichern</button>
+        <div id="einreiseMsg" style="margin-top:10px;font-size:12px;color:var(--green);min-height:18px;"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: Meine Einträge -->
+    <div class="page" id="pageMeineEintraege">
+      <div class="page-header">
+        <h2>Meine Einträge</h2>
+      </div>
+      <div class="card">
+        <div class="filter-row">
+          <input type="text" id="meFilter" placeholder="Suche nach ID / Grund ..." oninput="renderMeineEintraege()">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Datum</th><th>Spieler-ID</th><th>Grund</th><th>Notiz</th></tr>
+            </thead>
+            <tbody id="meineEintraegeTb"></tbody>
+          </table>
+        </div>
+        <div id="meineEmpty" class="empty-state" style="display:none">Noch keine Einträge vorhanden.</div>
+      </div>
+    </div>
+
+    <!-- PAGE: Meine Einreisen -->
+    <div class="page" id="pageMeineEinreisen">
+      <div class="page-header">
+        <h2>Meine Einreisen</h2>
+      </div>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>#</th><th>Datum</th><th>FiveM Name</th><th>Status</th><th>Grund</th></tr>
+            </thead>
+            <tbody id="meineEinreisenTb"></tbody>
+          </table>
+        </div>
+        <div id="einreisenEmpty" class="empty-state" style="display:none">Noch keine Einreisen vorhanden.</div>
+      </div>
+    </div>
+
+    <!-- ══ TL-ONLY PAGES ══ -->
+
+    <!-- PAGE: Mitglieder verwalten -->
+    <div class="page" id="pageMitglieder">
+      <div class="page-header">
+        <h2>Mitglieder verwalten</h2>
+        <button class="btn btn-sm" onclick="openAddMember()">+ Mitglied hinzufügen</button>
+      </div>
+      <div class="card">
+        <div class="filter-row">
+          <input type="text" id="mitFilter" placeholder="Name suchen ..." oninput="renderMitglieder()">
+          <select id="mitRankFilter" onchange="renderMitglieder()">
+            <option value="">Alle Ränge</option>
+            <option>Sr.Moderator</option><option>Moderator</option><option>Jr.Moderator</option>
+            <option>Sr.Supporter</option><option>Supporter</option><option>Jr.Supporter</option>
+            <option>Jr.Administrator</option><option>Administrator</option><option>Sr.Administrator</option>
+            <option>StV.Teamleitung</option><option>Teamleitung</option>
+            <option>Management</option><option>StV.Projektleitung</option><option>Projektleitung</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>Rang</th><th>Username</th><th>Einträge</th><th>Aktionen</th></tr>
+            </thead>
+            <tbody id="mitgliederTb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: Eintragsübersicht (TL) -->
+    <div class="page" id="pageUebersicht">
+      <div class="page-header">
+        <h2>Eintragsübersicht</h2>
+      </div>
+
+      <!-- Member Detail (hidden by default) -->
+      <div id="memberDetailView" style="display:none">
+        <div class="back-btn" onclick="closeMemberDetail()">
+          ← Zurück zur Übersicht
+        </div>
+        <div class="page-header" style="margin-bottom:16px">
+          <h2 id="detailName">–</h2>
+          <span class="badge" id="detailRank">–</span>
+        </div>
+        <div class="stat-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="stat-card"><div class="stat-num" id="dTotal">0</div><div class="stat-label">Gesamt</div></div>
+          <div class="stat-card"><div class="stat-num" id="dWeek">0</div><div class="stat-label">Diese Woche</div></div>
+          <div class="stat-card"><div class="stat-num" id="dEinreisen">0</div><div class="stat-label">Einreisen</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Einträge</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Datum</th><th>Spieler-ID</th><th>Grund</th><th>Notiz</th></tr></thead>
+              <tbody id="detailTb"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Member list view -->
+      <div id="memberListView">
+        <div class="slider-wrap">
+          <label>Min. Einträge diese Woche:</label>
+          <input type="range" min="0" max="200" step="5" value="0" id="weekSlider" oninput="updateSlider()">
+          <div class="slider-val"><span id="sliderVal">0</span>+</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Mitglieder nach Einträgen</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Rang</th><th>Name</th><th>Einträge Woche</th><th>Gesamt</th><th>Details</th></tr>
+              </thead>
+              <tbody id="uebersichtTb"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: Wocheneinträge TL -->
+    <div class="page" id="pageWoche">
+      <div class="page-header">
+        <h2>Wocheneinträge (Mo–So)</h2>
+      </div>
+      <div class="card">
+        <div class="card-title">Alle Einträge dieser Woche</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Rang</th><th>Name</th><th>Einträge</th><th>Einreisen</th><th>Fortschritt</th></tr></thead>
+            <tbody id="wocheTb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: Alle Einreisen (TL) -->
+    <div class="page" id="pageAlleEinreisen">
+      <div class="page-header">
+        <h2>Alle Einreisen</h2>
+      </div>
+      <div class="card">
+        <div class="filter-row">
+          <input type="text" id="alleErFilter" placeholder="Suche nach Name / Status ..." oninput="renderAlleEinreisen()">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Datum</th><th>FiveM Name</th><th>Status</th><th>Grund</th><th>Von</th></tr></thead>
+            <tbody id="alleEinreisenTb"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /mainScreen -->
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+
+<!-- Add Member Modal -->
+<div class="modal-overlay" id="modalAddMember">
+  <div class="modal">
+    <h3>Mitglied hinzufügen</h3>
+    <div class="form-group">
+      <label>Name (Discord / Ingame)</label>
+      <input type="text" id="newName" placeholder="Name" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Rang</label>
+      <select id="newRank">
+        <option>Jr.Supporter</option><option>Supporter</option><option>Sr.Supporter</option>
+        <option>Jr.Moderator</option><option>Moderator</option><option>Sr.Moderator</option>
+        <option>Jr.Administrator</option><option>Administrator</option><option>Sr.Administrator</option>
+        <option>StV.Teamleitung</option><option>Teamleitung</option>
+        <option>Management</option><option>StV.Projektleitung</option><option>Projektleitung</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Username (Login)</label>
+      <input type="text" id="newUsername" placeholder="username" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label>Passwort</label>
+      <input type="password" id="newPassword" placeholder="Passwort setzen">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modalAddMember')">Abbrechen</button>
+      <button class="btn btn-sm" onclick="addMember()">Hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Member Confirm -->
+<div class="modal-overlay" id="modalRemove">
+  <div class="modal">
+    <h3>Mitglied entfernen</h3>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:20px">Soll <strong id="removeNameLabel"></strong> wirklich aus dem Team entfernt werden? Der Zugang wird gesperrt.</p>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modalRemove')">Abbrechen</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmRemove()">Entfernen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  DATA STORE
+// ═══════════════════════════════════════
+
+const RANKS = [
+  { id:'pl',    label:'Projektleitung',    cls:'r-pl',    tier:14 },
+  { id:'stvpl', label:'StV.Projektleitung',cls:'r-stvpl', tier:13 },
+  { id:'mgmt',  label:'Management',        cls:'r-mgmt',  tier:12 },
+  { id:'tl',    label:'Teamleitung',       cls:'r-tl',    tier:11 },
+  { id:'stvtl', label:'StV.Teamleitung',   cls:'r-stvtl', tier:10 },
+  { id:'sradmin',label:'Sr.Administrator',cls:'r-sradmin',tier:9  },
+  { id:'admin', label:'Administrator',     cls:'r-admin', tier:8  },
+  { id:'jradmin',label:'Jr.Administrator',cls:'r-jradmin',tier:7  },
+  { id:'srmod', label:'Sr.Moderator',      cls:'r-srmod', tier:6  },
+  { id:'mod',   label:'Moderator',         cls:'r-mod',   tier:5  },
+  { id:'jrmod', label:'Jr.Moderator',      cls:'r-jrmod', tier:4  },
+  { id:'srsupp',label:'Sr.Supporter',      cls:'r-srsupp',tier:3  },
+  { id:'supp',  label:'Supporter',         cls:'r-supp',  tier:2  },
+  { id:'jrsupp',label:'Jr.Supporter',      cls:'r-jrsupp',tier:1  },
+];
+
+function rankByLabel(lbl){
+  return RANKS.find(r=>r.label===lbl) || {cls:'r-supp',label:lbl};
+}
+
+// Seeded "last Sunday 23:59" for week reset logic
+function getWeekStart(){
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const diff = day === 0 ? 7 : day;
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - diff + 1);
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function isThisWeek(ts){
+  return new Date(ts) >= getWeekStart();
+}
+
+function fmtDate(ts){
+  return new Date(ts).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+// ─── USERS DB ───
+let users = [
+  { id:'u0', username:'Owner', password:'owner11', name:'Owner', rank:'Projektleitung', role:'tl', active:true },
+  { id:'u1', username:'TLAdmin', password:'tl123', name:'Max Mustermann', rank:'Teamleitung', role:'tl', active:true },
+  { id:'u2', username:'Supporter1', password:'supp1', name:'Alex Müller', rank:'Supporter', role:'member', active:true },
+  { id:'u3', username:'Supporter2', password:'supp2', name:'Jana Schmidt', rank:'Sr.Supporter', role:'member', active:true },
+  { id:'u4', username:'Mod1', password:'mod1', name:'Chris Weber', rank:'Moderator', role:'member', active:true },
+];
+
+let nextUID = 10;
+
+// ─── ENTRIES ───
+let entries = [
+  { id:'e1', userId:'u2', date: Date.now()-6*864e5, spielerId:'1023', grund:'Allgemeiner Support', note:'Problem gelöst' },
+  { id:'e2', userId:'u2', date: Date.now()-5*864e5, spielerId:'2041', grund:'Bug-Report', note:'' },
+  { id:'e3', userId:'u2', date: Date.now()-3*864e5, spielerId:'3111', grund:'Regel-Verstoß', note:'Verwarnung' },
+  { id:'e4', userId:'u2', date: Date.now()-1*864e5, spielerId:'4200', grund:'Technischer Support', note:'' },
+  { id:'e5', userId:'u2', date: Date.now()-2*3600e3, spielerId:'5050', grund:'Spieler-Beschwerde', note:'Erledigt' },
+  { id:'e6', userId:'u3', date: Date.now()-4*864e5, spielerId:'8001', grund:'Whitelist-Antrag', note:'' },
+  { id:'e7', userId:'u3', date: Date.now()-1*864e5, spielerId:'8002', grund:'Allgemeiner Support', note:'' },
+  { id:'e8', userId:'u4', date: Date.now()-2*864e5, spielerId:'9001', grund:'Regel-Verstoß', note:'Ban 24h' },
+  { id:'e9', userId:'u4', date: Date.now()-1*3600e3, spielerId:'9002', grund:'Bug-Report', note:'' },
+];
+let nextEID = 20;
+
+// ─── EINREISEN ───
+let einreisen = [
+  { id:'er1', userId:'u2', date: Date.now()-5*864e5, fivemName:'Player_1234', status:'einReg',    grund:'Ersteinreise' },
+  { id:'er2', userId:'u2', date: Date.now()-2*864e5, fivemName:'Racer_99',    status:'nichtEin',  grund:'Auffällig' },
+  { id:'er3', userId:'u3', date: Date.now()-1*864e5, fivemName:'NewGuy_55',   status:'einNoReg',  grund:'Wiedereinreise' },
+];
+let nextERID = 10;
+
+// ─── SESSION ───
+let currentUser = null;
+let einreiseStatus = 'einReg';
+let removeTargetId = null;
+
+// Charts
+let weekChartInst = null;
+let typeChartInst = null;
+
+// ═══════════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════════
+let loginMode = 'member'; // 'member' | 'tl'
+
+function switchLoginTab(mode){
+  loginMode = mode;
+  document.querySelectorAll('.login-tab').forEach((t,i)=>{
+    t.classList.toggle('active', (mode==='member'&&i===0)||(mode==='tl'&&i===1));
+  });
+  document.getElementById('loginErr').textContent = '';
+}
+
+function doLogin(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const err = document.getElementById('loginErr');
+
+  const user = users.find(x => x.username === u && x.password === p && x.active);
+  if(!user){ err.textContent = 'Ungültige Zugangsdaten.'; return; }
+
+  const needsTL = loginMode === 'tl';
+  const isTL = user.role === 'tl';
+
+  if(needsTL && !isTL){ err.textContent = 'Kein TL/PL-Zugang.'; return; }
+  if(!needsTL && isTL && loginMode==='member'){
+    // TL can also use member area
+  }
+
+  currentUser = user;
+  err.textContent = '';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+
+  initApp();
+}
+
+function doLogout(){
+  currentUser = null;
+  showScreen('loginScreen');
+  switchLoginTab('member');
+}
+
+// ═══════════════════════════════════════
+//  APP INIT
+// ═══════════════════════════════════════
+function initApp(){
+  showScreen('mainScreen');
+  const isTL = currentUser.role === 'tl';
+  const rInfo = rankByLabel(currentUser.rank);
+
+  document.getElementById('sidebarUser').textContent = currentUser.name;
+  const rb = document.getElementById('sidebarRank');
+  rb.textContent = currentUser.rank;
+  rb.className = 'rank-badge ' + rInfo.cls;
+
+  buildNav(isTL);
+  showPage('pageDashboard');
+}
+
+function buildNav(isTL){
+  const nav = document.getElementById('navMenu');
+  nav.innerHTML = '';
+
+  const items = [
+    { page:'pageDashboard',       icon:homeIcon(),      label:'Dashboard' },
+    { page:'pageEintrag',         icon:plusIcon(),      label:'Eintrag hinzufügen' },
+    { page:'pageEinreise',        icon:borderIcon(),    label:'Einreise hinzufügen' },
+    { page:'pageMeineEintraege',  icon:listIcon(),      label:'Meine Einträge' },
+    { page:'pageMeineEinreisen',  icon:arrowIcon(),     label:'Meine Einreisen' },
+  ];
+
+  if(isTL){
+    items.push(
+      { page:'pageUebersicht',  icon:eyeIcon(),    label:'Eintragsübersicht' },
+      { page:'pageWoche',       icon:calIcon(),    label:'Wocheneinträge' },
+      { page:'pageAlleEinreisen', icon:globeIcon(), label:'Alle Einreisen' },
+      { page:'pageMitglieder',  icon:usersIcon(),  label:'Mitglieder' },
+    );
+  }
+
+  items.forEach(it => {
+    const div = document.createElement('div');
+    div.className = 'nav-item';
+    div.dataset.page = it.page;
+    div.innerHTML = it.icon + '<span>' + it.label + '</span>';
+    div.onclick = () => showPage(it.page);
+    nav.appendChild(div);
+  });
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.page === id);
+  });
+
+  // reset detail view
+  if(id !== 'pageUebersicht'){
+    closeMemberDetail();
+  }
+
+  switch(id){
+    case 'pageDashboard':    renderDashboard(); break;
+    case 'pageMeineEintraege': renderMeineEintraege(); break;
+    case 'pageMeineEinreisen': renderMeineEinreisen(); break;
+    case 'pageUebersicht':   renderUebersicht(); break;
+    case 'pageWoche':        renderWoche(); break;
+    case 'pageMitglieder':   renderMitglieder(); break;
+    case 'pageAlleEinreisen': renderAlleEinreisen(); break;
+  }
+}
+
+// ═══════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════
+function renderDashboard(){
+  const uid = currentUser.id;
+  const myEntries = entries.filter(e => e.userId === uid);
+  const myWeek = myEntries.filter(e => isThisWeek(e.date));
+  const myER = einreisen.filter(e => e.userId === uid);
+
+  document.getElementById('myTotalEntries').textContent = myEntries.length;
+  document.getElementById('myWeekEntries').textContent = myWeek.length;
+  document.getElementById('myEinreisen').textContent = myER.length;
+
+  // Top 5
+  renderTop5();
+
+  // Weekly chart (last 6 weeks)
+  const weekData = getLast6Weeks(myEntries);
+  const ctx1 = document.getElementById('weekChart').getContext('2d');
+  if(weekChartInst) weekChartInst.destroy();
+  weekChartInst = new Chart(ctx1, {
+    type:'bar',
+    data:{
+      labels: weekData.labels,
+      datasets:[{ label:'Einträge', data: weekData.counts,
+        backgroundColor:'rgba(91,127,255,0.6)', borderColor:'#5b7fff',
+        borderWidth:1, borderRadius:4 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{color:'#8892a4',font:{size:11}}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y:{ ticks:{color:'#8892a4',font:{size:11}}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true }
+      }
+    }
+  });
+
+  // Type donut
+  const grunds = {};
+  myEntries.forEach(e=>{ grunds[e.grund]=(grunds[e.grund]||0)+1; });
+  const ctx2 = document.getElementById('typeChart').getContext('2d');
+  if(typeChartInst) typeChartInst.destroy();
+  if(Object.keys(grunds).length === 0){
+    ctx2.canvas.parentNode.innerHTML = '<div class="empty-state" style="height:200px;display:flex;align-items:center;justify-content:center">Noch keine Einträge</div>';
+    return;
+  }
+  const bgColors = ['#5b7fff','#38d9a9','#f0b429','#ff6b6b','#be8ef5','#64c8ff','#ffa500'];
+  typeChartInst = new Chart(ctx2, {
+    type:'doughnut',
+    data:{
+      labels: Object.keys(grunds),
+      datasets:[{ data: Object.values(grunds), backgroundColor: bgColors.slice(0,Object.keys(grunds).length), borderWidth:0 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'right', labels:{color:'#8892a4',font:{size:11},boxWidth:10} } }
+    }
+  });
+}
+
+function renderTop5(){
+  const weekStart = getWeekStart();
+  // count per user this week
+  const counts = {};
+  entries.filter(e=>isThisWeek(e.date)).forEach(e=>{
+    counts[e.userId] = (counts[e.userId]||0)+1;
+  });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const list = document.getElementById('top5List');
+  if(sorted.length === 0){ list.innerHTML = '<span style="color:var(--text2);font-size:12px">Noch keine Einträge diese Woche</span>'; return; }
+  list.innerHTML = sorted.map(([uid,cnt],i)=>{
+    const u = users.find(x=>x.id===uid);
+    const name = u ? u.name : 'Unbekannt';
+    const rankCls = ['rank1','rank2','rank3','rank4','rank5'][i];
+    const medal = ['🥇','🥈','🥉','4.','5.'][i];
+    return `<div class="top5-item"><span class="top5-rank ${rankCls}">${medal}</span><span>${name}</span><span style="color:var(--accent);font-weight:600;margin-left:8px">${cnt}</span></div>`;
+  }).join('');
+}
+
+function getLast6Weeks(myEntries){
+  const labels = [], counts = [];
+  for(let i=5;i>=0;i--){
+    const start = new Date(getWeekStart());
+    start.setDate(start.getDate() - i*7);
+    const end = new Date(start); end.setDate(end.getDate()+7);
+    const label = start.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+    labels.push('KW '+label);
+    counts.push(myEntries.filter(e=>new Date(e.date)>=start&&new Date(e.date)<end).length);
+  }
+  return {labels,counts};
+}
+
+// ═══════════════════════════════════════
+//  EINTRAG HINZUFÜGEN
+// ═══════════════════════════════════════
+function submitEintrag(){
+  const id = document.getElementById('eID').value.trim();
+  const grund = document.getElementById('eGrund').value;
+  const note = document.getElementById('eNote').value.trim();
+  const msg = document.getElementById('eintragMsg');
+
+  if(!id || !grund){ msg.style.color='var(--red)'; msg.textContent='Bitte ID und Grund ausfüllen.'; return; }
+
+  entries.push({ id:'e'+nextEID++, userId:currentUser.id, date:Date.now(), spielerId:id, grund, note });
+  msg.style.color='var(--green)';
+  msg.textContent='✓ Eintrag wurde gespeichert!';
+  document.getElementById('eID').value = '';
+  document.getElementById('eGrund').value = '';
+  document.getElementById('eNote').value = '';
+  setTimeout(()=>{ msg.textContent=''; },3000);
+}
+
+// ═══════════════════════════════════════
+//  EINREISE
+// ═══════════════════════════════════════
+function selectEinreise(val){
+  einreiseStatus = val;
+  ['einReg','einNoReg','nichtEin'].forEach(v=>{
+    document.getElementById('rb-'+v).classList.toggle('selected', v===val);
+  });
+}
+
+function submitEinreise(){
+  const name = document.getElementById('erName').value.trim();
+  const grund = document.getElementById('erGrund').value;
+  const msg = document.getElementById('einreiseMsg');
+  if(!name || !grund){ msg.style.color='var(--red)'; msg.textContent='Bitte Name und Grund ausfüllen.'; return; }
+
+  einreisen.push({ id:'er'+nextERID++, userId:currentUser.id, date:Date.now(), fivemName:name, status:einreiseStatus, grund });
+  msg.style.color='var(--green)';
+  msg.textContent='✓ Einreise gespeichert!';
+  document.getElementById('erName').value = '';
+  document.getElementById('erGrund').value = '';
+  selectEinreise('einReg');
+  setTimeout(()=>{ msg.textContent=''; },3000);
+}
+
+// ═══════════════════════════════════════
+//  MEINE EINTRÄGE
+// ═══════════════════════════════════════
+function renderMeineEintraege(){
+  const filter = (document.getElementById('meFilter')||{}).value?.toLowerCase()||'';
+  const mine = entries.filter(e=>e.userId===currentUser.id)
+    .filter(e=>!filter||(e.spielerId+e.grund+e.note).toLowerCase().includes(filter))
+    .sort((a,b)=>b.date-a.date);
+  const tb = document.getElementById('meineEintraegeTb');
+  const emp = document.getElementById('meineEmpty');
+  if(mine.length===0){ tb.innerHTML=''; emp.style.display='block'; return; }
+  emp.style.display='none';
+  tb.innerHTML = mine.map((e,i)=>`
+    <tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td>${fmtDate(e.date)}</td>
+      <td><code style="color:var(--accent)">${e.spielerId}</code></td>
+      <td>${e.grund}</td>
+      <td style="color:var(--text2)">${e.note||'–'}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+//  MEINE EINREISEN
+// ═══════════════════════════════════════
+function statusLabel(s){
+  const map={einReg:'Eingreist (reg.)',einNoReg:'Eingreist (nicht reg.)',nichtEin:'Nicht eingreist'};
+  return map[s]||s;
+}
+function statusColor(s){
+  if(s==='einReg') return 'var(--green)';
+  if(s==='einNoReg') return 'var(--gold)';
+  return 'var(--red)';
+}
+
+function renderMeineEinreisen(){
+  const mine = einreisen.filter(e=>e.userId===currentUser.id).sort((a,b)=>b.date-a.date);
+  const tb = document.getElementById('meineEinreisenTb');
+  const emp = document.getElementById('einreisenEmpty');
+  if(mine.length===0){ tb.innerHTML=''; emp.style.display='block'; return; }
+  emp.style.display='none';
+  tb.innerHTML = mine.map((e,i)=>`
+    <tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td>${fmtDate(e.date)}</td>
+      <td>${e.fivemName}</td>
+      <td style="color:${statusColor(e.status)}">${statusLabel(e.status)}</td>
+      <td>${e.grund}</td>
+    </tr>
+  `).join('');
+}
+
+// ═══════════════════════════════════════
+//  TL: EINTRAGSÜBERSICHT
+// ═══════════════════════════════════════
+function renderUebersicht(){
+  const min = parseInt(document.getElementById('weekSlider')?.value||0);
+  const activeMembers = users.filter(u=>u.active && u.id !== currentUser.id || u.id === currentUser.id);
+  const rows = activeMembers.map(u=>{
+    const total = entries.filter(e=>e.userId===u.id).length;
+    const week = entries.filter(e=>e.userId===u.id&&isThisWeek(e.date)).length;
+    return {...u, total, week};
+  }).filter(u=>u.week>=min).sort((a,b)=>b.week-a.week);
+
+  const tb = document.getElementById('uebersichtTb');
+  const rInfo = r => rankByLabel(r);
+  tb.innerHTML = rows.map(u=>`
+    <tr>
+      <td><span class="badge ${rInfo(u.rank).cls}">${u.rank}</span></td>
+      <td>${u.name}</td>
+      <td style="color:var(--accent);font-weight:600">${u.week}</td>
+      <td style="color:var(--text2)">${u.total}</td>
+      <td><button class="btn btn-sm btn-outline" onclick="openMemberDetail('${u.id}')">Details</button></td>
+    </tr>
+  `).join('');
+}
+
+function updateSlider(){
+  const v = document.getElementById('weekSlider').value;
+  document.getElementById('sliderVal').textContent = v;
+  renderUebersicht();
+}
+
+function openMemberDetail(uid){
+  const u = users.find(x=>x.id===uid);
+  if(!u) return;
+  const rInfo = rankByLabel(u.rank);
+  const myEntries = entries.filter(e=>e.userId===uid).sort((a,b)=>b.date-a.date);
+  const myWeek = myEntries.filter(e=>isThisWeek(e.date));
+  const myER = einreisen.filter(e=>e.userId===uid);
+
+  document.getElementById('detailName').textContent = u.name;
+  const dr = document.getElementById('detailRank');
+  dr.textContent = u.rank; dr.className = 'badge '+rInfo.cls;
+  document.getElementById('dTotal').textContent = myEntries.length;
+  document.getElementById('dWeek').textContent = myWeek.length;
+  document.getElementById('dEinreisen').textContent = myER.length;
+
+  document.getElementById('detailTb').innerHTML = myEntries.length===0
+    ? '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">Keine Einträge</td></tr>'
+    : myEntries.map((e,i)=>`
+      <tr>
+        <td style="color:var(--text2)">${i+1}</td>
+        <td>${fmtDate(e.date)}</td>
+        <td><code style="color:var(--accent)">${e.spielerId}</code></td>
+        <td>${e.grund}</td>
+        <td style="color:var(--text2)">${e.note||'–'}</td>
+      </tr>`).join('');
+
+  document.getElementById('memberListView').style.display='none';
+  document.getElementById('memberDetailView').style.display='block';
+}
+
+function closeMemberDetail(){
+  document.getElementById('memberListView').style.display='block';
+  document.getElementById('memberDetailView').style.display='none';
+}
+
+// ═══════════════════════════════════════
+//  TL: WOCHENEINTRÄGE
+// ═══════════════════════════════════════
+function renderWoche(){
+  const active = users.filter(u=>u.active);
+  const rows = active.map(u=>{
+    const week = entries.filter(e=>e.userId===u.id&&isThisWeek(e.date)).length;
+    const er = einreisen.filter(e=>e.userId===u.id&&isThisWeek(e.date)).length;
+    return {...u, week, er};
+  }).sort((a,b)=>b.week-a.week);
+
+  const maxWeek = Math.max(...rows.map(r=>r.week),1);
+  const tb = document.getElementById('wocheTb');
+  tb.innerHTML = rows.map(u=>{
+    const rInfo = rankByLabel(u.rank);
+    const pct = Math.round((u.week/maxWeek)*100);
+    return `
+    <tr>
+      <td><span class="badge ${rInfo.cls}">${u.rank}</span></td>
+      <td>${u.name}</td>
+      <td style="color:var(--accent);font-weight:600">${u.week}</td>
+      <td style="color:var(--text2)">${u.er}</td>
+      <td style="min-width:120px">
+        <div style="font-size:11px;color:var(--text2);margin-bottom:3px">${pct}%</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+//  TL: ALLE EINREISEN
+// ═══════════════════════════════════════
+function renderAlleEinreisen(){
+  const filter = (document.getElementById('alleErFilter')||{}).value?.toLowerCase()||'';
+  const all = [...einreisen].filter(e=>{
+    if(!filter) return true;
+    const u = users.find(x=>x.id===e.userId);
+    return (e.fivemName+statusLabel(e.status)+(u?u.name:'')).toLowerCase().includes(filter);
+  }).sort((a,b)=>b.date-a.date);
+
+  const tb = document.getElementById('alleEinreisenTb');
+  tb.innerHTML = all.map(e=>{
+    const u = users.find(x=>x.id===e.userId);
+    return `
+    <tr>
+      <td>${fmtDate(e.date)}</td>
+      <td>${e.fivemName}</td>
+      <td style="color:${statusColor(e.status)}">${statusLabel(e.status)}</td>
+      <td>${e.grund}</td>
+      <td style="color:var(--text2)">${u?u.name:'?'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+//  TL: MITGLIEDER
+// ═══════════════════════════════════════
+function renderMitglieder(){
+  const filter = (document.getElementById('mitFilter')||{}).value?.toLowerCase()||'';
+  const rankFilter = (document.getElementById('mitRankFilter')||{}).value||'';
+  const list = users.filter(u=>{
+    if(!u.active) return false;
+    if(filter && !u.name.toLowerCase().includes(filter) && !u.username.toLowerCase().includes(filter)) return false;
+    if(rankFilter && u.rank!==rankFilter) return false;
+    return true;
+  });
+
+  const tb = document.getElementById('mitgliederTb');
+  tb.innerHTML = list.map(u=>{
+    const rInfo = rankByLabel(u.rank);
+    const total = entries.filter(e=>e.userId===u.id).length;
+    const isOwn = u.id === currentUser.id;
+    return `
+    <tr>
+      <td>${u.name}</td>
+      <td><span class="badge ${rInfo.cls}">${u.rank}</span></td>
+      <td style="color:var(--text2)">${u.username}</td>
+      <td style="color:var(--accent)">${total}</td>
+      <td>
+        ${isOwn ? '<span style="color:var(--text2);font-size:11px">–</span>' :
+          `<button class="btn btn-danger btn-sm" onclick="promptRemove('${u.id}')">Entfernen</button>`
+        }
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openAddMember(){
+  document.getElementById('newName').value='';
+  document.getElementById('newUsername').value='';
+  document.getElementById('newPassword').value='';
+  openModal('modalAddMember');
+}
+
+function addMember(){
+  const name = document.getElementById('newName').value.trim();
+  const rank = document.getElementById('newRank').value;
+  const username = document.getElementById('newUsername').value.trim();
+  const password = document.getElementById('newPassword').value;
+  if(!name||!username||!password){ alert('Bitte alle Felder ausfüllen.'); return; }
+  if(users.find(u=>u.username===username)){ alert('Username bereits vergeben.'); return; }
+
+  const isTLRank = ['Teamleitung','StV.Teamleitung','Management','StV.Projektleitung','Projektleitung'].includes(rank);
+  users.push({ id:'u'+nextUID++, username, password, name, rank, role: isTLRank?'tl':'member', active:true });
+  closeModal('modalAddMember');
+  renderMitglieder();
+}
+
+function promptRemove(uid){
+  const u = users.find(x=>x.id===uid);
+  removeTargetId = uid;
+  document.getElementById('removeNameLabel').textContent = u ? u.name : uid;
+  openModal('modalRemove');
+}
+
+function confirmRemove(){
+  if(removeTargetId){
+    const u = users.find(x=>x.id===removeTargetId);
+    if(u){ u.active = false; }
+  }
+  closeModal('modalRemove');
+  renderMitglieder();
+}
+
+// ═══════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ═══════════════════════════════════════
+//  SVG ICONS
+// ═══════════════════════════════════════
+const iconProps = 'width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
+function homeIcon(){ return `<svg ${iconProps}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`; }
+function plusIcon(){ return `<svg ${iconProps}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`; }
+function listIcon(){ return `<svg ${iconProps}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="12" r="1" fill="currentColor"/><circle cx="3" cy="18" r="1" fill="currentColor"/></svg>`; }
+function eyeIcon(){ return `<svg ${iconProps}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`; }
+function calIcon(){ return `<svg ${iconProps}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`; }
+function usersIcon(){ return `<svg ${iconProps}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`; }
+function arrowIcon(){ return `<svg ${iconProps}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>`; }
+function borderIcon(){ return `<svg ${iconProps}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6M12 9v6"/></svg>`; }
+function globeIcon(){ return `<svg ${iconProps}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`; }
+
+// Enter key login
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && document.getElementById('loginScreen').classList.contains('active')) doLogin();
+});
+</script>
+</body>
+</html>
